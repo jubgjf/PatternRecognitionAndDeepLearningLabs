@@ -37,3 +37,5 @@ def test(model: torch.nn.Module, device: torch.device, batch_size: int, epoch: i
         print(f'Accuracy: {acc}')
     else:
         print(f'Epoch: {epoch}, Accuracy: {acc}')
+
+    return acc
