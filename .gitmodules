@@ -1,0 +1,6 @@
+[submodule "PatternRecognition/lab0"]
+	path = PatternRecognition/lab0
+	url = https://github.com/BaileysRock/SpeakerRecognition.git
+[submodule "DeepLearning/lab3"]
+	path = DeepLearning/lab3
+	url = https://github.com/jubgjf/PlantSeedlingsClassification.git
