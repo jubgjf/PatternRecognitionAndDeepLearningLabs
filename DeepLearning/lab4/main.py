@@ -35,27 +35,54 @@ if __name__ == '__main__':
     log_path = './logs/RNN'
     model_save_path = './model/RNN.pt'
     model = RNN(weight, input_size=vector_size, hidden_size=128, output_size=len(label_dict), device=device)
-
-    # log_path = './logs/GRU'
-    # model_save_path = './model/GRU.pt'
-    # model = GRU(weight, input_size=vector_size, hidden_size=128, output_size=len(label_dict), device=device)
-
-    # log_path = './logs/LSTM'
-    # model_save_path = './model/LSTM.pt'
-    # model = LSTM(weight, input_size=vector_size, hidden_size=256, output_size=len(label_dict), device=device)
-
-    # log_path = './logs/BiLSTM'
-    # model_save_path = './model/BiLSTM.pt'
-    # model = BiLSTM(weight, input_size=vector_size, hidden_size=256, output_size=len(label_dict), device=device)
-
     train_dataloader, dev_dataloader, test_dataloader = dataloader(data_path, index_to_key, key_to_index, label_dict,
                                                                    batch_size=256,
                                                                    words_length=64)
-
     train(model, train_dataloader, dev_dataloader, log_path=log_path, model_save_path=model_save_path, device=device,
           epochs=100)
-    acc, loss = test(model, test_dataloader, device=device)
-    print(f"[Test]  acc = {acc:5.4f}, loss = {loss:9.4f}")
+    acc, recall, micro_f1, macro_f1, loss = test(model, test_dataloader, device=device)
+    print(f"[Test] acc = {acc:6.4f}, recall = {recall:6.4f}, "
+          f"micro f1 = {micro_f1:6.4f}, macro f1 = {macro_f1:6.4f}, "
+          f"loss = {loss:6.4f}")
+
+    log_path = './logs/GRU'
+    model_save_path = './model/GRU.pt'
+    model = GRU(weight, input_size=vector_size, hidden_size=128, output_size=len(label_dict), device=device)
+    train_dataloader, dev_dataloader, test_dataloader = dataloader(data_path, index_to_key, key_to_index, label_dict,
+                                                                   batch_size=256,
+                                                                   words_length=64)
+    train(model, train_dataloader, dev_dataloader, log_path=log_path, model_save_path=model_save_path, device=device,
+          epochs=100)
+    acc, recall, micro_f1, macro_f1, loss = test(model, test_dataloader, device=device)
+    print(f"[Test] acc = {acc:6.4f}, recall = {recall:6.4f}, "
+          f"micro f1 = {micro_f1:6.4f}, macro f1 = {macro_f1:6.4f}, "
+          f"loss = {loss:6.4f}")
+
+    log_path = './logs/LSTM'
+    model_save_path = './model/LSTM.pt'
+    model = LSTM(weight, input_size=vector_size, hidden_size=256, output_size=len(label_dict), device=device)
+    train_dataloader, dev_dataloader, test_dataloader = dataloader(data_path, index_to_key, key_to_index, label_dict,
+                                                                   batch_size=256,
+                                                                   words_length=128)
+    train(model, train_dataloader, dev_dataloader, log_path=log_path, model_save_path=model_save_path, device=device,
+          epochs=100)
+    acc, recall, micro_f1, macro_f1, loss = test(model, test_dataloader, device=device)
+    print(f"[Test] acc = {acc:6.4f}, recall = {recall:6.4f}, "
+          f"micro f1 = {micro_f1:6.4f}, macro f1 = {macro_f1:6.4f}, "
+          f"loss = {loss:6.4f}")
+
+    log_path = './logs/BiLSTM'
+    model_save_path = './model/BiLSTM.pt'
+    model = BiLSTM(weight, input_size=vector_size, hidden_size=256, output_size=len(label_dict), device=device)
+    train_dataloader, dev_dataloader, test_dataloader = dataloader(data_path, index_to_key, key_to_index, label_dict,
+                                                                   batch_size=256,
+                                                                   words_length=128)
+    train(model, train_dataloader, dev_dataloader, log_path=log_path, model_save_path=model_save_path, device=device,
+          epochs=100)
+    acc, recall, micro_f1, macro_f1, loss = test(model, test_dataloader, device=device)
+    print(f"[Test] acc = {acc:6.4f}, recall = {recall:6.4f}, "
+          f"micro f1 = {micro_f1:6.4f}, macro f1 = {macro_f1:6.4f}, "
+          f"loss = {loss:6.4f}")
 
     # ====================               ====================
     # ==================== task: Weather ====================
