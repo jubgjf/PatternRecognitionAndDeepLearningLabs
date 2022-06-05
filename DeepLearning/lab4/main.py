@@ -32,8 +32,8 @@ if __name__ == '__main__':
 
     label_dict = {'书籍': 0, '平板': 1, '手机': 2, '水果': 3, '洗发水': 4, '热水器': 5, '蒙牛': 6, '衣服': 7, '计算机': 8, '酒店': 9}
 
-    log_path = './logs/RNN'
-    model_save_path = './model/RNN.pt'
+    log_path = './logs/Text_RNN'
+    model_save_path = './model/Text_RNN.pkl'
     model = RNN(weight, input_size=vector_size, hidden_size=128, output_size=len(label_dict), device=device)
     train_dataloader, dev_dataloader, test_dataloader = dataloader(data_path, index_to_key, key_to_index, label_dict,
                                                                    batch_size=256,
@@ -45,8 +45,8 @@ if __name__ == '__main__':
           f"micro f1 = {micro_f1:6.4f}, macro f1 = {macro_f1:6.4f}, "
           f"loss = {loss:6.4f}")
 
-    log_path = './logs/GRU'
-    model_save_path = './model/GRU.pt'
+    log_path = './logs/Text_GRU'
+    model_save_path = './model/Text_GRU.pkl'
     model = GRU(weight, input_size=vector_size, hidden_size=128, output_size=len(label_dict), device=device)
     train_dataloader, dev_dataloader, test_dataloader = dataloader(data_path, index_to_key, key_to_index, label_dict,
                                                                    batch_size=256,
@@ -58,8 +58,8 @@ if __name__ == '__main__':
           f"micro f1 = {micro_f1:6.4f}, macro f1 = {macro_f1:6.4f}, "
           f"loss = {loss:6.4f}")
 
-    log_path = './logs/LSTM'
-    model_save_path = './model/LSTM.pt'
+    log_path = './logs/Text_LSTM'
+    model_save_path = './model/Text_LSTM.pkl'
     model = LSTM(weight, input_size=vector_size, hidden_size=256, output_size=len(label_dict), device=device)
     train_dataloader, dev_dataloader, test_dataloader = dataloader(data_path, index_to_key, key_to_index, label_dict,
                                                                    batch_size=256,
@@ -71,8 +71,8 @@ if __name__ == '__main__':
           f"micro f1 = {micro_f1:6.4f}, macro f1 = {macro_f1:6.4f}, "
           f"loss = {loss:6.4f}")
 
-    log_path = './logs/BiLSTM'
-    model_save_path = './model/BiLSTM.pt'
+    log_path = './logs/Text_BiLSTM'
+    model_save_path = './model/Text_BiLSTM.pkl'
     model = BiLSTM(weight, input_size=vector_size, hidden_size=256, output_size=len(label_dict), device=device)
     train_dataloader, dev_dataloader, test_dataloader = dataloader(data_path, index_to_key, key_to_index, label_dict,
                                                                    batch_size=256,
