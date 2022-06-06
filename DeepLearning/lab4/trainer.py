@@ -1,11 +1,15 @@
+import matplotlib.pyplot as plt
 import torch
+from datetime import datetime
 from sklearn import metrics
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 from tensorboardX import SummaryWriter
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
 
 
-def train(model: torch.nn.Module, train_dataloader: DataLoader, dev_dataloader: DataLoader, log_path: str,
-          model_save_path: str, device: torch.device, epochs: int):
+def text_train(model: torch.nn.Module, train_dataloader: DataLoader, dev_dataloader: DataLoader, log_path: str,
+               model_save_path: str, device: torch.device, epochs: int):
     loss_func = torch.nn.CrossEntropyLoss()  # 损失函数选用交叉熵
     optimizer = torch.optim.Adam(model.parameters(), lr=3 * 1e-5)
 
@@ -33,7 +37,7 @@ def train(model: torch.nn.Module, train_dataloader: DataLoader, dev_dataloader: 
                 ground_truth = label.data.cpu()
                 predict_ans = torch.max(predict_label.data, 1)[1].cpu()
                 train_acc = metrics.accuracy_score(ground_truth, predict_ans)
-                acc, recall, micro_f1, macro_f1, dev_loss = test(model, dev_dataloader, device)
+                acc, recall, micro_f1, macro_f1, dev_loss = text_test(model, dev_dataloader, device)
 
                 if dev_loss > dev_best_loss:
                     torch.save(model, model_save_path)
@@ -55,7 +59,7 @@ def train(model: torch.nn.Module, train_dataloader: DataLoader, dev_dataloader: 
     writer.close()
 
 
-def test(model: torch.nn.Module, dataloader: DataLoader, device: torch.device):
+def text_test(model: torch.nn.Module, dataloader: DataLoader, device: torch.device):
     loss_func = torch.nn.CrossEntropyLoss()
     loss_total = 0
 
@@ -83,3 +87,68 @@ def test(model: torch.nn.Module, dataloader: DataLoader, device: torch.device):
     loss = loss_total / len(dataloader)
 
     return acc, recall, micro_f1, macro_f1, loss
+
+
+def weather_train(model: torch.nn.Module, train_dataloader: DataLoader, log_path: str,
+                  model_save_path: str, device: torch.device, epochs: int):
+    loss_func = F.l1_loss
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+
+    writer = SummaryWriter(log_path)
+
+    best_loss = float('inf')
+
+    for epoch in range(epochs):
+        print(f"Epoch [{epoch + 1}/{epochs}]")
+
+        for data, label, _ in train_dataloader:
+            data = data.to(device)
+            label = label.to(device)
+
+            predict_label = model((data, label))
+
+            model.zero_grad()
+            loss = loss_func(predict_label, label)
+            loss.backward()
+            optimizer.step()
+
+            if loss < best_loss:
+                best_loss = loss
+                torch.save(model.state_dict(), model_save_path)
+
+            mse = mean_squared_error(label.cpu().detach().numpy(), predict_label.cpu().detach().numpy())
+            mae = mean_absolute_error(label.cpu().detach().numpy(), predict_label.cpu().detach().numpy())
+
+            print(f"loss = {loss.item()}, mse = {mse}, mae = {mae}")
+
+            writer.add_scalar("mse", mse)
+            writer.add_scalar("mae", mae)
+
+    writer.close()
+
+
+def weather_test(model: torch.nn.Module, dataloader: DataLoader, device: torch.device):
+    with torch.no_grad():
+        for data, label, date in dataloader:
+            data = data.to(device)
+            label = label.to(device)
+
+            predicts_label = model((data, label))
+
+            label = label.cpu().detach().numpy()
+            predicts_label = predicts_label.cpu().detach().numpy()
+
+            for i in range(label.shape[0]):
+                date_x = [datetime.strptime(d[i], "%d.%m.%Y %H:%M:%S") for d in date]
+
+                plt.xlabel("Time")
+                plt.ylabel("Temp")
+
+                plt.plot_date(date_x, label[i], label='real')
+                plt.plot_date(date_x, predicts_label[i], label='predict')
+
+                plt.xticks(rotation=45)  # x 轴标签太长，旋转 45 度
+                plt.ylim((-10, 1.5 * max(max(label[i]), max(predicts_label[i]))))
+                plt.legend()
+                plt.tight_layout()
+                plt.show()

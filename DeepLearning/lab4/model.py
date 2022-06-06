@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class RNN(nn.Module):
+class TextRNN(nn.Module):
     def __init__(self, weight, input_size, hidden_size, output_size, device):
-        super(RNN, self).__init__()
+        super(TextRNN, self).__init__()
 
         self.hidden_size = hidden_size
 
@@ -37,9 +37,9 @@ class RNN(nn.Module):
         return output
 
 
-class GRU(nn.Module):
+class TextGRU(nn.Module):
     def __init__(self, weight, input_size, hidden_size, output_size, device):
-        super(GRU, self).__init__()
+        super(TextGRU, self).__init__()
 
         self.hidden_size = hidden_size
 
@@ -80,9 +80,9 @@ class GRU(nn.Module):
         return output
 
 
-class LSTM(nn.Module):
+class TextLSTM(nn.Module):
     def __init__(self, weight, input_size, hidden_size, output_size, device):
-        super(LSTM, self).__init__()
+        super(TextLSTM, self).__init__()
 
         self.hidden_size = hidden_size
 
@@ -129,9 +129,9 @@ class LSTM(nn.Module):
         return output
 
 
-class BiLSTM(nn.Module):
+class TextBiLSTM(nn.Module):
     def __init__(self, weight, input_size, hidden_size, output_size, device):
-        super(BiLSTM, self).__init__()
+        super(TextBiLSTM, self).__init__()
         self.hidden_size = hidden_size
 
         self.weight = weight
@@ -189,3 +189,62 @@ class BiLSTM(nn.Module):
         output = self.softmax(self.h2y(hy))
 
         return output
+
+
+class WeatherLSTM(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, device):
+        super(WeatherLSTM, self).__init__()
+
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+
+        self.device = device
+
+        # ingate
+        self.x2h_i = nn.Linear(input_size, self.hidden_size)
+        self.h2h_i = nn.Linear(self.hidden_size, self.hidden_size)
+        # forgetgate
+        self.x2h_f = nn.Linear(input_size, self.hidden_size)
+        self.h2h_f = nn.Linear(self.hidden_size, self.hidden_size)
+        # cellgate
+        self.x2h_c = nn.Linear(input_size, self.hidden_size)
+        self.h2h_c = nn.Linear(self.hidden_size, self.hidden_size)
+        # outgate
+        self.x2h_o = nn.Linear(input_size, self.hidden_size)
+        self.h2h_o = nn.Linear(self.hidden_size, self.hidden_size)
+
+        self.h2y = nn.Linear(self.hidden_size, 1)
+
+    def forward(self, inputs):
+        inputs0 = inputs[0].permute(1, 0, 2)
+        inputs1 = inputs[1].permute(1, 0)
+
+        hx = torch.zeros((inputs0.shape[1], self.hidden_size), device=self.device)
+        cx = torch.zeros((inputs0.shape[1], self.hidden_size), device=self.device)
+
+        for x in inputs0:
+            ingate = torch.sigmoid(self.x2h_i(x) + self.h2h_i(hx))
+            forgetgate = torch.sigmoid(self.x2h_f(x) + self.h2h_f(hx))
+            outgate = torch.sigmoid(self.x2h_o(x) + self.h2h_o(hx))
+            cellgate = torch.tanh(self.x2h_c(x) + self.h2h_c(hx))
+
+            cy = torch.mul(cx, forgetgate) + torch.mul(ingate, cellgate)
+            hx = torch.mul(outgate, torch.tanh(cy))
+
+        hy = self.h2y(hx)
+        for i in range(self.output_size - 1):
+            x = inputs1[i].view(-1, 1)
+            x = nn.Linear(1, self.input_size, device=self.device)(x)
+
+            ingate = torch.sigmoid(self.x2h_i(x) + self.h2h_i(hx))
+            forgetgate = torch.sigmoid(self.x2h_f(x) + self.h2h_f(hx))
+            outgate = torch.sigmoid(self.x2h_o(x) + self.h2h_o(hx))
+            cellgate = torch.tanh(self.x2h_c(x) + self.h2h_c(hx))
+
+            cy = torch.mul(cx, forgetgate) + torch.mul(ingate, cellgate)
+            hx = torch.mul(outgate, torch.tanh(cy))
+
+            hy = torch.cat((hy, self.h2y(hx)), 1)
+
+        return hy

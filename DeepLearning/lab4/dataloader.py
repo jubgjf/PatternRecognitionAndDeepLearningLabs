@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 
 
-def dataloader(input_path, index_to_key, key_to_index, label_dict, batch_size, words_length):
+def text_dataloader(input_path, index_to_key, key_to_index, label_dict, batch_size, words_length):
     """
     获取 train/dev/test 的 dataloader
 
@@ -22,6 +22,7 @@ def dataloader(input_path, index_to_key, key_to_index, label_dict, batch_size, w
     """
 
     all_sentences = pd.read_csv(input_path).dropna(subset=['review'])
+
     train_sentences = all_sentences.iloc[
         [i for i in range(len(all_sentences)) if i % 5 == 1 or i % 5 == 2 or i % 5 == 3]]
     dev_sentences = all_sentences.iloc[[i for i in range(len(all_sentences)) if i % 5 == 4]]
@@ -36,6 +37,33 @@ def dataloader(input_path, index_to_key, key_to_index, label_dict, batch_size, w
     test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_dataloader, dev_dataloader, test_dataloader
+
+
+def weather_dataloader(input_paths, batch_size):
+    """
+    获取 train/test 的 dataloader
+
+    Args:
+        input_paths: 原始数据路径，其中 [0] 为 train，[1] 为 detest
+        batch_size: batch_size
+
+    Returns:
+        返回一个 tuple，内容为 train_dataloader, test_dataloader
+    """
+
+    train_weather = pd.read_csv(input_paths[0])
+    test_weather = pd.read_csv(input_paths[1])
+
+    train_weather = [data[1] for data in list(train_weather.groupby('Week Number')) if len(data[1]) == 1008]
+    test_weather = [data[1] for data in list(test_weather.groupby('Week Number')) if len(data[1]) == 1008]
+
+    train_dataset = WeatherDataset(train_weather)
+    test_dataset = WeatherDataset(test_weather)
+
+    train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+    test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
+
+    return train_dataloader, test_dataloader
 
 
 class TextDataset(Dataset):
@@ -71,3 +99,24 @@ class TextDataset(Dataset):
 
     def __len__(self):
         return len(self.text)
+
+
+class WeatherDataset(Dataset):
+    def __init__(self, weather):
+        super(WeatherDataset, self).__init__()
+        self.weather = weather
+
+    def __getitem__(self, item):
+        weather = self.weather[item]
+
+        weekdays = weather.loc[weather['WeekDay'] <= 5]
+        weekends = weather.loc[weather['WeekDay'] >= 6]
+
+        date = list(weekends['Date Time'])
+        train_data = weekdays.drop(['Date Time'], axis=1)
+        test_data = weekends['T (degC)']
+
+        return torch.Tensor(train_data.values), torch.Tensor(test_data.values), date
+
+    def __len__(self):
+        return len(self.weather)
