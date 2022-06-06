@@ -164,12 +164,17 @@ def main():
     weight = generator.__getattr__('layer0').weight
     weight = weight.flip(2, 3).permute(1, 0, 2, 3).flatten(1)
 
-    ################
-    # TODO factorize the weight of layer0 to get the directions
-    # run: python sefa.py pggan_celebahq1024 --cuda false/true
+    alpha = 2  # 步长
 
-    directions = ...
-    ################
+    wwt = torch.mm(weight, weight.T)
+    eig_val, eig_vec = torch.linalg.eig(wwt)
+    eig_val = eig_val.real
+    eig_vec = eig_vec.real
+    eig_val, idx = torch.sort(eig_val, descending=True)
+
+    max_eig_vecs = [eig_vec[idx[i]] for i in range(num_sem)]  # 取前 num_sem 个最大的特征向量
+    for i in range(len(directions)):
+        directions[i] = alpha * max_eig_vecs[i].cpu().data + directions[i]
 
     if args.cuda:
         directions = [d.cuda() for d in directions]
@@ -186,7 +191,7 @@ def main():
     visual_list = [[] for _ in range(num_sem)]
     with torch.no_grad():
         video_list = []
-        for s in tqdm(args.step):
+        for s in tqdm(range(args.step)):
             row_list = []
             images = generator(code, **synthesis_kwargs)['image']
             images = resize_image(images, args.viz_size)
