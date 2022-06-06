@@ -4,6 +4,24 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/PatternRecognition/lab0/dataset" />
+      <excludeFolder url="file://$MODULE_DIR$/PatternRecognition/lab0/train" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab1/data" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab1/model" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab2/data" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab2/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab2/model" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab3/Dataset" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab4/data" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab4/model" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab3/out" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab3/Trains" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab4/embedding" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab4/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab5/genforce/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab5/gan/data" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab5/gan/images" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab5/gan/model" />
+      <excludeFolder url="file://$MODULE_DIR$/DeepLearning/lab5/gan/videos" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
